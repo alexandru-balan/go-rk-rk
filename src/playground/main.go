@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go-ml-linear-systems/src/algorithms"
-	"go-ml-linear-systems/src/generators/normal"
+	"github.com/go-ml-linear-systems/src/algorithms"
+	"github.com/go-ml-linear-systems/src/generators/normal"
 	"gonum.org/v1/gonum/mat"
 	"math"
 	"sync"
@@ -11,17 +11,20 @@ import (
 )
 
 const (
-	MEAN      = 7
-	DEVIATION = 2
+	MEAN      = 0
+	DEVIATION = 1
+	m         = 200
+	n         = 150
+	k         = 100
 )
 
 func main() {
 
-	U := mat.NewDense(200, 100, nil)
-	V := mat.NewDense(100, 150, nil)
-	B := mat.NewDense(150, 1, nil)
-	X := mat.NewDense(200, 150, nil)
-	y := mat.NewDense(200, 1, nil)
+	U := mat.NewDense(m, k, nil)
+	V := mat.NewDense(k, n, nil)
+	X := mat.NewDense(m, n, nil)
+	B := mat.NewDense(n, 1, nil)
+	y := mat.NewDense(m, 1, nil)
 
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(3)
@@ -33,11 +36,12 @@ func main() {
 	waitGroup.Wait()
 	X.Mul(U, V)
 	y.Mul(X, B)
-	endTime := time.Now().UnixNano()
-
-	fmt.Printf("%.3f seconds\n", (float64(endTime-startTime))/1_000_000)
 
 	algorithms.RkRk(U, V, y, B, int(7*math.Pow(10, 4)), true)
 
 	//fmt.Printf("Matrix U = \n%.4v\n\n", mat.Formatted(U, mat.Prefix(""), mat.Squeeze()))
+
+	endTime := time.Now().UnixNano()
+
+	fmt.Printf("%.3f seconds\n", (float64(endTime-startTime))/1_000_000_000)
 }

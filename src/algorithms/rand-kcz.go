@@ -4,6 +4,12 @@ import (
 	rand2 "golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distuv"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
+	"image/color"
+	"log"
 	"math"
 	"sync"
 	"time"
@@ -11,10 +17,6 @@ import (
 
 const GOROUTINES = 10
 
-/**
-TODO: While the row is not chosen, generate a random number from the normal distribution and compare it with the probability of the first row; if the probability is not met then go to next row and generate another number
-
-*/
 func getRandomRow(rowsProb []float64, maxRows int, c chan int) {
 	seed := rand2.NewSource(uint64(time.Now().UnixNano()))
 	chosen := int(distuv.Uniform{Min: 0, Max: float64(maxRows), Src: seed}.Rand())
@@ -89,8 +91,9 @@ func RkRk(U, V, y, B *mat.Dense, iterations int, keepErrors ...bool) {
 	x := mat.NewDense(ucols, 1, nil)
 	b := mat.NewDense(vcols, 1, nil)
 
-	// Int communication channel for getting random rows of U and V
+	// Int communication channels for getting random rows of U and V
 	c2 := make(chan int)
+	c3 := make(chan int)
 
 	// Compute the frobenius norm of the U and V matrices
 	uFrobenius := frobeniusSquared(U)
@@ -109,9 +112,9 @@ func RkRk(U, V, y, B *mat.Dense, iterations int, keepErrors ...bool) {
 	for i := 0; i < iterations; i++ {
 
 		go getRandomRow(uRowsProb, urows, c2)
-		go getRandomRow(vRowsProb, vrows, c2)
+		go getRandomRow(vRowsProb, vrows, c3)
 		uRandomRow := <-c2
-		vRandomRow := <-c2
+		vRandomRow := <-c3
 
 		// Update the x vector
 		chosenRow := U.RawRowView(uRandomRow)
@@ -156,5 +159,41 @@ func RkRk(U, V, y, B *mat.Dense, iterations int, keepErrors ...bool) {
 		}
 	}
 
-	points := make()
+	points := make(plotter.XYs, iterations)
+	for i := range points {
+		points[i].X = float64(i)
+		points[i].Y = errors[i]
+	}
+
+	p, err := plot.New()
+	if err != nil {
+		log.Panic(err)
+	}
+	p.Title.Text = "RK-RK"
+	p.X.Label.Text = "iterations"
+	p.Y.Label.Text = "error"
+	p.Add(plotter.NewGrid())
+
+	scatter, err := plotter.NewScatter(points)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	scatter.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
+	scatter.GlyphStyle.Radius = vg.Points(2)
+	scatter.GlyphStyle.Shape = draw.CrossGlyph{}
+	//scatter.Color = color.RGBA{R: 255, B: 128, A: 255}
+
+	/*p.X.Tick.Marker = plot.ConstantTicks([]plot.Tick{
+		{Value: 1000, Label: "1000"}, {Value: 2000, Label: "2000"}, {Value: 10000, Label: "10_000"}, {Value: 40000, Label: "40_000"}, {Value: 70000, Label: "70_000"},
+	})*/
+
+	p.Add(scatter)
+	p.Y.Min = math.Pow(10, -4)
+
+	err = p.Save(1200, 1200, "./build/scatter.png")
+	if err != nil {
+		log.Panic(err)
+	}
+
 }
