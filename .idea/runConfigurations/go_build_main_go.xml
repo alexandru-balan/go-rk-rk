@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false" nameIsGenerated="true">
+    <module name="go-ml-linear-systems" />
+    <working_directory value="$PROJECT_DIR$/../go-ml-linear-systems/" />
+    <go_parameters value="-i" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/../go-ml-linear-systems/src/playground/main.go" />
+    <package value="go-linear-systems/playground" />
+    <directory value="$PROJECT_DIR$/" />
+    <output_directory value="$PROJECT_DIR$/../go-ml-linear-systems/build" />
+    <method v="2" />
+  </configuration>
+</component>
