@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-ml-linear-systems/generators/normal"
+	"github.com/go-rk-rk/generators/normal"
 	"gonum.org/v1/gonum/mat"
 	"sync"
 	"time"
