@@ -1,4 +1,4 @@
-# go-ml-linear-systems
+# go-rk-rk
 
 This is a package that focuses on solving linear systems of type **Xβ = y** where X is a
 low-rank matrix and β and y are two vectors. The β vector is the vector of unknowns
