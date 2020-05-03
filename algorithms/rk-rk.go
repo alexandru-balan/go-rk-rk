@@ -1,95 +1,88 @@
 package algorithms
 
 import (
-	rand2 "golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
-	"gonum.org/v1/gonum/stat/sampleuv"
-	"math"
 	"sync"
-	"time"
 )
 
-var errors []float64
-
-func getRandomRow(rowsProb []float64) int {
-	source := rand2.NewSource(uint64(time.Now().UnixNano()))
-
-	index, _ := sampleuv.NewWeighted(rowsProb, source).Take()
-
-	return index
-}
-
-// euclideanNorm will return the euclidean norm of a vector
-func euclideanNorm(vector mat.Vector) float64 {
-	return mat.Norm(vector, 2)
-}
-
-func frobeniusSquared(matrix *mat.Dense) float64 {
-	return math.Pow(mat.Norm(matrix, 2), 2.0)
-}
-
-func getRowsProbability(probVector []float64, frobenius float64, matrix *mat.Dense, rownum int, group *sync.WaitGroup) {
-	for i := 0; i < rownum; i++ {
-		probVector[i] = math.Pow(euclideanNorm(matrix.RowView(i)), 2) / frobenius
-	}
-
-	group.Done()
-}
-
-// !!! Only the first option for keepErrors will be used
-func RkRk(U, V *mat.Dense, B, y *mat.VecDense, iterations int, keepErrors ...bool) (mat.VecDense, []float64) {
+// RkRk returns the minimum norm solution to the system A*b=y, where A=U*V
+// Knowing the whole matrix A is unnecessary and so it is never computed by the algorithm.
+//
+// Parameters:
+// U, V are mat.Dense matrices that are a defactorization of A.
+// y is mat.VecDense vector that represents the expected output for the system.
+// iterations is an int representing how many times MAX is the algorithm allowed to run.
+// tolerance is a float64 that represents the maximal error allowed.
+// keepErrors is an optional boolean that specifies whether you want the function to retain the error at each iteration.
+//
+// Returns the vector b that solves A*b=y and a []float64 array containing the errors at each iteration.
+//
+// Notes:
+// Pass a negative number as the iteration to use the default value of 100_000
+// Even though you can pass as many boolean values for keepErrors only the first will be taken into account
+func RkRk(U, V *mat.Dense, y *mat.VecDense, iterations int, tolerance float64, keepErrors ...bool) (mat.VecDense, []float64) {
 
 	// STEP 0.
 	// Initialization of variables
-	rows_U, cols_U := U.Dims()
-	rows_V, cols_V := V.Dims()
+	if iterations < 0 {
+		iterations = 100_000
+	}
 
-	x := mat.NewVecDense(cols_U, nil)
-	b := mat.NewVecDense(cols_V, nil)
+	rowsU, colsU := U.Dims()
+	rowsV, colsV := V.Dims()
 
-	errors = make([]float64, iterations)
+	x := mat.NewVecDense(colsU, nil)
+	b := mat.NewVecDense(colsV, nil)
+
+	var errors []float64
 
 	// STEP 1.
 	// Computing the frobenius norm uf U and V
-	frobenius_U := frobeniusSquared(U)
-	frobenius_V := frobeniusSquared(V)
+	frobeniusU := FrobeniusSquared(U)
+	frobeniusV := FrobeniusSquared(V)
 
 	// STEP 2.
 	// Computing the probability of each row of U and V
-	probs_U := make([]float64, rows_U)
-	probs_V := make([]float64, rows_V)
+	probsU := make([]float64, rowsU)
+	probsV := make([]float64, rowsV)
 
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(2)
-	go getRowsProbability(probs_U, frobenius_U, U, rows_U, &waitGroup)
-	go getRowsProbability(probs_V, frobenius_V, V, rows_V, &waitGroup)
+	go GetRowsProbability(probsU, frobeniusU, U, rowsU, &waitGroup)
+	go GetRowsProbability(probsV, frobeniusV, V, rowsV, &waitGroup)
 	waitGroup.Wait()
 
 	// STEP 3.
 	// Repeating the same process until we go insane
 	for i := 0; i < iterations; i++ {
-		rand_U := getRandomRow(probs_U)
-		rand_V := getRandomRow(probs_V)
+		randU := GetRandomRow(probsU)
+		randV := GetRandomRow(probsV)
 
-		chosen_U := U.RowView(rand_U)
-		chosen_V := V.RowView(rand_V)
+		chosenU := U.RowView(randU)
+		chosenV := V.RowView(randV)
 
-		euclidean_U := math.Pow(euclideanNorm(chosen_U), 2)
-		euclidean_V := math.Pow(euclideanNorm(chosen_V), 2)
+		euclideanU := EuclideanNormSquared(chosenU)
+		euclideanV := EuclideanNormSquared(chosenV)
 
 		x.AddScaledVec(
 			x,
-			(y.At(rand_U, 0)-mat.Dot(chosen_U, x))/euclidean_U,
-			chosen_U)
+			(y.At(randU, 0)-mat.Dot(chosenU, x))/euclideanU,
+			chosenU)
 		b.AddScaledVec(
 			b,
-			(x.At(rand_V, 0)-mat.Dot(chosen_V, b))/euclidean_V,
-			chosen_V)
+			(x.At(randV, 0)-mat.Dot(chosenV, b))/euclideanV,
+			chosenV)
 
 		if keepErrors[0] {
-			err_vec := new(mat.VecDense)
-			err_vec.SubVec(b, B)
-			errors[i] = math.Pow(euclideanNorm(err_vec), 2)
+			errVec := new(mat.VecDense)
+			errVec.MulVec(V, b)
+			errVec2 := new(mat.VecDense)
+			errVec2.MulVec(U, errVec)
+			errVec2.SubVec(errVec2, y)
+			errors = append(errors, EuclideanNormSquared(errVec2))
+			if errors[i] <= tolerance {
+				break
+			}
 		}
 	}
 
