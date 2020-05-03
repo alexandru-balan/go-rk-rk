@@ -1,4 +1,4 @@
-package normal
+package gaussian
 
 import (
 	"golang.org/x/exp/rand"
@@ -33,6 +33,18 @@ func Generate(matrix *mat.Dense, mean, sigma float64, group *sync.WaitGroup) {
 	for row := range c {
 		matrix.SetRow(j, row)
 		j++
+	}
+
+	group.Done()
+}
+
+func GenerateVector(vector *mat.VecDense, mean, sigma float64, group *sync.WaitGroup) {
+	length := vector.Len()
+	seed := rand.NewSource(uint64(time.Now().UnixNano()))
+	distribution := distuv.Normal{Mu: mean, Sigma: sigma, Src: seed}
+
+	for i := 0; i < length; i++ {
+		vector.SetVec(i, distribution.Rand())
 	}
 
 	group.Done()
