@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"gonum.org/v1/plot"
@@ -7,7 +7,6 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 	"image/color"
 	"log"
-	"math"
 )
 
 func Plot(values []float64, path string) {
@@ -25,7 +24,6 @@ func Plot(values []float64, path string) {
 	p.X.Label.Text = "iterations"
 	p.Y.Label.Text = "error"
 	p.Add(plotter.NewGrid())
-	p.Y.Min = math.Pow(10, -4)
 
 	scatter, err := plotter.NewScatter(points)
 	if err != nil {

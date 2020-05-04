@@ -2,56 +2,53 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-rk-rk/generators/normal"
+	"github.com/go-rk-rk/algorithms"
+	"github.com/go-rk-rk/generators/gaussian"
+	"github.com/go-rk-rk/utils"
 	"gonum.org/v1/gonum/mat"
+	"math"
 	"sync"
 	"time"
 )
 
 const (
-	MEAN      = 0
-	DEVIATION = 1
-	m         = 20
-	n         = 15
-	k         = 10
+	MEAN      = 0.0
+	DEVIATION = 1.0
+	m         = 200
+	n         = 150
+	k         = 100
 )
 
 func main() {
+	startTime := time.Now().UnixNano()
 
 	U := mat.NewDense(m, k, nil)
 	V := mat.NewDense(k, n, nil)
 	X := mat.NewDense(m, n, nil)
-	B := mat.NewDense(n, 1, nil)
-	//b := mat.NewDense(n, 1, nil)
-	y := mat.NewDense(m, 1, nil)
+	B := mat.NewVecDense(n, nil)
+	b := mat.NewVecDense(n, nil)
+	y := mat.NewVecDense(m, nil)
 
-	var waitGroup sync.WaitGroup
+	// Getting random test values for our matrices
+	waitGroup := new(sync.WaitGroup)
 	waitGroup.Add(3)
-
-	startTime := time.Now().UnixNano()
-	go normal.Generate(U, MEAN, DEVIATION, &waitGroup)
-	go normal.Generate(V, MEAN, DEVIATION, &waitGroup)
-	go normal.Generate(B, MEAN, DEVIATION, &waitGroup)
+	go gaussian.Generate(U, MEAN, DEVIATION, waitGroup)
+	go gaussian.Generate(V, MEAN, DEVIATION, waitGroup)
+	go gaussian.GenerateVector(B, MEAN, DEVIATION, waitGroup)
 	waitGroup.Wait()
+
 	X.Mul(U, V)
-	y.Mul(X, B)
+	y.MulVec(X, B)
 
-	//var err []float64
+	//*B = utils.SolveLeastSquares(X, y)
 
-	_ = B.Solve(X, y)
+	tolerance := math.Pow(10, -10)
+	var errors []float64
+	*b, errors = algorithms.RkRk(U, V, y, 100_000, tolerance, true)
+	utils.Plot(errors, "./build/scatter.png")
 
-	/**b, err = algorithms.RkRk(U, V, y, B, 70_000, true)
-	Plot(err, "./build/scatter.png")
-
-	fmt.Println(err[0])
-	fmt.Println(err[69_999])*/
-
-	//*b, _ = algorithms.RekRek(U, V, y, B, 100_000, true)
-	//Plot(err, "./build/scatter2.png")
-
-	//fmt.Printf("Matrix U = \n%v\n\n", mat.Formatted(U.RowView(0).T(), mat.Prefix(""), mat.Squeeze()))
-
-	//fmt.Println(U.RowView(0).AtVec(0))
+	fmt.Println(errors[0])
+	fmt.Println(errors[len(errors)-1])
 
 	endTime := time.Now().UnixNano()
 
