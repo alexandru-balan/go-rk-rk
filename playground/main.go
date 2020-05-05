@@ -14,12 +14,13 @@ import (
 const (
 	MEAN      = 0.0
 	DEVIATION = 1.0
-	m         = 200
-	n         = 150
-	k         = 100
+	m         = 100
+	n         = 40
+	k         = 30
 )
 
 func main() {
+
 	startTime := time.Now().UnixNano()
 
 	U := mat.NewDense(m, k, nil)
@@ -44,7 +45,7 @@ func main() {
 
 	tolerance := math.Pow(10, -10)
 	var errors []float64
-	*b, errors = algorithms.RkRk(U, V, y, 100_000, tolerance, true)
+	*b, errors = algorithms.RekRek(U, V, y, 1_000_000, tolerance, true)
 	utils.Plot(errors, "./build/scatter.png")
 
 	fmt.Println(errors[0])
