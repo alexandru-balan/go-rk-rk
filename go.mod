@@ -1,4 +1,4 @@
-module github.com/go-rk-rk
+module github.com/alexandru-balan/go-rk-rk
 
 go 1.14
 
