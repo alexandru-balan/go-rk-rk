@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-rk-rk/algorithms"
-	"github.com/go-rk-rk/generators/gaussian"
-	"github.com/go-rk-rk/utils"
+	"github.com/alexandru-balan/go-rk-rk/algorithms"
+	"github.com/alexandru-balan/go-rk-rk/generators/gaussian"
+	"github.com/alexandru-balan/go-rk-rk/utils"
 	"gonum.org/v1/gonum/mat"
 	"math"
 	"sync"
