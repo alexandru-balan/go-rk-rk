@@ -7,6 +7,7 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 	"image/color"
 	"log"
+	"math"
 )
 
 func Plot(values []float64, path string) {
@@ -21,6 +22,7 @@ func Plot(values []float64, path string) {
 		points[i].Y = values[i]
 	}
 
+	p.Y.Min = math.Pow(10, -10)
 	p.Title.Text = "REK-RK"
 	p.X.Label.Text = "iterations"
 	p.Y.Label.Text = "error"
