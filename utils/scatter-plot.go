@@ -21,9 +21,9 @@ func Plot(values []float64, path string) {
 		points[i].Y = values[i]
 	}
 
-	p.Title.Text = "RK-RK"
+	p.Title.Text = "REK-RK"
 	p.X.Label.Text = "iterations"
-	p.Y.Label.Text = "error * 10^-4"
+	p.Y.Label.Text = "error"
 	p.Add(plotter.NewGrid())
 
 	scatter, err := plotter.NewScatter(points)
@@ -37,7 +37,7 @@ func Plot(values []float64, path string) {
 
 	p.Add(scatter)
 
-	err = p.Save(1200, 1200, path)
+	err = p.Save(400, 400, path)
 	if err != nil {
 		log.Panic(err)
 	}

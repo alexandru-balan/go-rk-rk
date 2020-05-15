@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/alexandru-balan/go-rk-rk/algorithms"
 	"github.com/alexandru-balan/go-rk-rk/generators/gaussian"
-	"github.com/alexandru-balan/go-rk-rk/utils"
 	"gonum.org/v1/gonum/mat"
 	"math"
 	"sync"
@@ -14,9 +13,9 @@ import (
 const (
 	MEAN      = 0.0
 	DEVIATION = 1.0
-	m         = 100
-	n         = 40
-	k         = 30
+	m         = 250
+	n         = 100
+	k         = 75
 )
 
 func main() {
@@ -43,10 +42,10 @@ func main() {
 
 	//*B = utils.SolveLeastSquares(X, y)
 
-	tolerance := math.Pow(10, -10)
+	tolerance := math.Pow(10, -32)
 	var errors []float64
 	*b, errors = algorithms.RekRek(U, V, y, 1_000_000, tolerance, true)
-	utils.Plot(errors, "./build/scatter.png")
+	// utils.Plot(errors, "./build/scatter.png")
 
 	fmt.Println(errors[0])
 	fmt.Println(errors[len(errors)-1])

@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-// Variable used to keep error at each iteration
-var errors []float64
-
 // EuclideanNormSquared returns the squared euclidean norm of a mat.Vector.
 //
 // @param vector : mat.Vector -- The vector for which you need the squared euclidean norm
