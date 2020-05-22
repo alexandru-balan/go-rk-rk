@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// RekRek returns the min-norm least-squares solution of a system A*b=y
+// RkRek returns the min-norm least-squares solution of a system A*b=y
 //
 // Parameters:
 // U and V are two matrices such that U*V=A.
@@ -20,7 +20,7 @@ import (
 // Pass a negative number as the iterations number to default to 100_000.
 // Only the first value in keepErrors is evaluated.
 // If keepErrors[0] is false then the returned errors array will be empty.
-func RekRek(U, V *mat.Dense, y *mat.VecDense, iterations int, tolerance float64, keepErrors ...bool) (mat.VecDense, []float64) {
+func RkRek(U, V *mat.Dense, y *mat.VecDense, iterations int, tolerance float64, keepErrors ...bool) (mat.VecDense, []float64) {
 	// STEP 0.
 	// Initialization of variables
 	if iterations < 0 {

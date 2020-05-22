@@ -45,7 +45,7 @@ func main() {
 
 	tolerance := math.Pow(10, -4)
 	var errors []float64
-	*b, errors = algorithms.RekRek(U, V, y, 1_000_000, tolerance, true)
+	*b, errors = algorithms.RkRek(U, V, y, 1_000_000, tolerance, true)
 	utils.Plot(errors, "./build/scatter.png")
 
 	fmt.Println(errors[0])
