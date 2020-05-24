@@ -1,12 +1,10 @@
 package algorithms
 
 import (
-	rand2 "golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/sampleuv"
 	"math"
 	"sync"
-	"time"
 )
 
 // EuclideanNormSquared returns the squared euclidean norm of a mat.Vector.
@@ -27,9 +25,9 @@ func FrobeniusSquared(matrix *mat.Dense) float64 {
 // The scope of this function is to return a random row index for the RkRk and RkRek algorithms.
 // Each row probability is computed by GetRowsProbability method
 func GetRandomRow(rowsProb []float64) int {
-	source := rand2.NewSource(uint64(time.Now().UnixNano()))
+	//source := rand2.NewSource(uint64(time.Now().UnixNano()))
 
-	index, _ := sampleuv.NewWeighted(rowsProb, source).Take()
+	index, _ := sampleuv.NewWeighted(rowsProb, nil).Take()
 
 	return index
 }

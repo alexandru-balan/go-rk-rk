@@ -14,9 +14,9 @@ import (
 const (
 	MEAN      = 0.0
 	DEVIATION = 1.0
-	m         = 250
-	n         = 100
-	k         = 75
+	m         = 100
+	n         = 75
+	k         = 50
 )
 
 func main() {
